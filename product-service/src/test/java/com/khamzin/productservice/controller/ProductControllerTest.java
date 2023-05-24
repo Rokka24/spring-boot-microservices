@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.khamzin.productservice.util.TestContainersStarterUtil;
 import com.khamzin.productservice.dto.ProductRequestDto;
 import com.khamzin.productservice.dto.ProductResponseDto;
-import com.khamzin.productservice.repository.ProductRepository;
 import com.khamzin.productservice.service.ProductService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -18,10 +17,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.math.BigDecimal;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsStringIgnoringCase;
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -43,9 +40,6 @@ class ProductControllerTest {
     @MockBean
     private ProductService productService;
 
-    @MockBean
-    private ProductRepository productRepository;
-
     @Test
     void shouldCreateProduct() throws Exception {
         ProductRequestDto productRequest = getProductRequest();
@@ -54,12 +48,6 @@ class ProductControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(productRequestString))
                 .andExpect(status().isCreated());
-
-        doReturn(List.of(productRequest))
-                .when(productRepository)
-                .findAll();
-
-        assertThat(productRepository.findAll().size()).isEqualTo(1);
     }
 
     @Test
