@@ -1,5 +1,6 @@
 package com.khamzin.inventoryservice.controller;
 
+import com.khamzin.inventoryservice.dto.InventoryResponseDto;
 import com.khamzin.inventoryservice.service.InventoryService;
 import com.khamzin.inventoryservice.util.TestContainerStarter;
 import org.junit.jupiter.api.BeforeAll;
@@ -12,8 +13,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsStringIgnoringCase;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -34,13 +39,17 @@ public class InventoryControllerTest {
     @Test
     void shouldCheckAvailability() throws Exception {
         String skuCode = "dummy";
+        InventoryResponseDto expectedValueInServiceMock = InventoryResponseDto.builder()
+                .skuCode(skuCode)
+                .isInStock(true)
+                .build();
 
-        when(inventoryService.isInStock(skuCode)).thenReturn(true);
-        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/api/inventory/" + skuCode))
+        when(inventoryService.isInStock(List.of(skuCode))).thenReturn(List.of(expectedValueInServiceMock));
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/inventory?skuCode=" + skuCode)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andReturn();
-        String expectedResponse = mvcResult.getResponse().getContentAsString();
-        assertThat(expectedResponse).isEqualTo("true");
+                .andExpect(jsonPath("$[0].skuCode", containsStringIgnoringCase(expectedValueInServiceMock.getSkuCode())))
+                .andExpect(jsonPath("$[0].inStock").value(true));
     }
 
     @Test

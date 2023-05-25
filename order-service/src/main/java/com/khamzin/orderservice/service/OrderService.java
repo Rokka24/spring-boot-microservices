@@ -1,6 +1,7 @@
 package com.khamzin.orderservice.service;
 
-import com.khamzin.orderservice.dto.OrderRequestDto;
+import com.khamzin.orderservice.dto.inventory.InventoryResponseDto;
+import com.khamzin.orderservice.dto.order.OrderRequestDto;
 import com.khamzin.orderservice.model.Order;
 import com.khamzin.orderservice.model.OrderLineItems;
 import com.khamzin.orderservice.repository.OrderRepository;
@@ -8,7 +9,9 @@ import com.khamzin.orderservice.util.mapper.OrderLineItemsMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,6 +21,7 @@ public class OrderService {
 
     private final OrderLineItemsMapper orderLineItemsMapper;
     private final OrderRepository orderRepository;
+    private final WebClient webClient;
 
     @Transactional
     public void placeOrder(OrderRequestDto orderRequestDto) {
@@ -31,8 +35,30 @@ public class OrderService {
                 .orderLineItemsList(orderLineItems)
                 .build();
 
-        orderLineItems.forEach(item -> item.setOrder(order));
+        orderLineItems.forEach(items -> items.setOrder(order));
 
-        orderRepository.save(order);
+        InventoryResponseDto[] inventoryResponseArray = getInventoryResponses(orderLineItems);
+
+        boolean allProductsInStock = Arrays.stream(inventoryResponseArray)
+                .allMatch(InventoryResponseDto::isInStock);
+
+        if (allProductsInStock) {
+            orderRepository.save(order);
+        } else {
+            throw new IllegalArgumentException("Product is not in stock.");
+        }
+    }
+
+    private InventoryResponseDto[] getInventoryResponses(List<OrderLineItems> orderLineItems) {
+        List<String> skuCodes = orderLineItems.stream()
+                .map(OrderLineItems::getSkuCode)
+                .toList();
+
+        return webClient.get()
+                .uri("http://localhost:8082/api/inventory",
+                        uriBuilder -> uriBuilder.queryParam("skuCode", skuCodes).build())
+                .retrieve()
+                .bodyToMono(InventoryResponseDto[].class)
+                .block();
     }
 }

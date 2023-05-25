@@ -1,6 +1,6 @@
 package com.khamzin.orderservice.util.mapper;
 
-import com.khamzin.orderservice.dto.OrderLineItemsDto;
+import com.khamzin.orderservice.dto.order.OrderLineItemsDto;
 import com.khamzin.orderservice.model.OrderLineItems;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;

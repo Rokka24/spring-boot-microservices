@@ -1,4 +1,4 @@
-package com.khamzin.orderservice.dto;
+package com.khamzin.orderservice.dto.order;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

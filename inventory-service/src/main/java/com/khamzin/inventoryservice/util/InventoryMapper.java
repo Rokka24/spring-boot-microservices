@@ -1,6 +1,7 @@
 package com.khamzin.inventoryservice.util;
 
 import com.khamzin.inventoryservice.dto.InventoryRequestDto;
+import com.khamzin.inventoryservice.dto.InventoryResponseDto;
 import com.khamzin.inventoryservice.model.Inventory;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -18,5 +19,12 @@ public class InventoryMapper {
 
     public InventoryRequestDto convertToRequestDto(Inventory inventory) {
         return modelMapper.map(inventory, InventoryRequestDto.class);
+    }
+
+    public InventoryResponseDto convertToResponseDto(Inventory inventory) {
+        return InventoryResponseDto.builder()
+                .skuCode(inventory.getSkuCode())
+                .isInStock(inventory.getQuantity() > 0)
+                .build();
     }
 }

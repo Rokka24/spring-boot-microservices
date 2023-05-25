@@ -1,6 +1,6 @@
 package com.khamzin.orderservice.controller;
 
-import com.khamzin.orderservice.dto.OrderRequestDto;
+import com.khamzin.orderservice.dto.order.OrderRequestDto;
 import com.khamzin.orderservice.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
