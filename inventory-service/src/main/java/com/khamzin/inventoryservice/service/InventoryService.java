@@ -4,7 +4,8 @@ import com.khamzin.inventoryservice.dto.InventoryRequestDto;
 import com.khamzin.inventoryservice.dto.InventoryResponseDto;
 import com.khamzin.inventoryservice.model.Inventory;
 import com.khamzin.inventoryservice.repository.InventoryRepository;
-import com.khamzin.inventoryservice.util.InventoryMapper;
+import com.khamzin.inventoryservice.util.exception.InventoryNotFoundException;
+import com.khamzin.inventoryservice.util.mapper.InventoryMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -47,7 +48,7 @@ public class InventoryService {
         if (skuCodes.size() == inventoryResponses.size()) {
             return inventoryResponses;
         } else {
-            throw new IllegalArgumentException("Response has item that doesn't exist in inventory");
+            throw new InventoryNotFoundException("Request has item that doesn't exist in inventory");
         }
     }
 }

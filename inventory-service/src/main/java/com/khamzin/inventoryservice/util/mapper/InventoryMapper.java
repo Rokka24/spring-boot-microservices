@@ -1,4 +1,4 @@
-package com.khamzin.inventoryservice.util;
+package com.khamzin.inventoryservice.util.mapper;
 
 import com.khamzin.inventoryservice.dto.InventoryRequestDto;
 import com.khamzin.inventoryservice.dto.InventoryResponseDto;
