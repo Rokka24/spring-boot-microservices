@@ -5,11 +5,14 @@ import com.khamzin.orderservice.dto.order.OrderRequestDto;
 import com.khamzin.orderservice.model.Order;
 import com.khamzin.orderservice.model.OrderLineItems;
 import com.khamzin.orderservice.repository.OrderRepository;
+import com.khamzin.orderservice.util.exception.InventoryNotFoundException;
 import com.khamzin.orderservice.util.mapper.OrderLineItemsMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.util.Arrays;
 import java.util.List;
@@ -45,7 +48,7 @@ public class OrderService {
         if (allProductsInStock) {
             orderRepository.save(order);
         } else {
-            throw new IllegalArgumentException("Product is not in stock.");
+            throw new InventoryNotFoundException("Product run out.");
         }
     }
 
@@ -58,6 +61,7 @@ public class OrderService {
                 .uri("http://localhost:8082/api/inventory",
                         uriBuilder -> uriBuilder.queryParam("skuCode", skuCodes).build())
                 .retrieve()
+                .onStatus(HttpStatusCode::isError, clientResponse -> Mono.error(new InventoryNotFoundException("Request has item that doesn't exist in inventory")))
                 .bodyToMono(InventoryResponseDto[].class)
                 .block();
     }
