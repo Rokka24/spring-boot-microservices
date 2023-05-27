@@ -24,7 +24,7 @@ public class OrderService {
 
     private final OrderLineItemsMapper orderLineItemsMapper;
     private final OrderRepository orderRepository;
-    private final WebClient webClient;
+    private final WebClient.Builder webClientBuilder;
 
     @Transactional
     public void placeOrder(OrderRequestDto orderRequestDto) {
@@ -57,8 +57,8 @@ public class OrderService {
                 .map(OrderLineItems::getSkuCode)
                 .toList();
 
-        return webClient.get()
-                .uri("http://localhost:8082/api/inventory",
+        return webClientBuilder.build().get()
+                .uri("http://inventory-service/api/inventory",
                         uriBuilder -> uriBuilder.queryParam("skuCode", skuCodes).build())
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, clientResponse -> Mono.error(new InventoryNotFoundException("Request has item that doesn't exist in inventory")))

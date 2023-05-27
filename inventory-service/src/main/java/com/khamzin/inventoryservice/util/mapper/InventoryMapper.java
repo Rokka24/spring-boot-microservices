@@ -17,9 +17,6 @@ public class InventoryMapper {
         return modelMapper.map(inventoryRequestDto, Inventory.class);
     }
 
-    public InventoryRequestDto convertToRequestDto(Inventory inventory) {
-        return modelMapper.map(inventory, InventoryRequestDto.class);
-    }
 
     public InventoryResponseDto convertToResponseDto(Inventory inventory) {
         return InventoryResponseDto.builder()
