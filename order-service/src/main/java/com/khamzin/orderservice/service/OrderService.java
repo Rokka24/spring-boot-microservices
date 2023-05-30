@@ -27,7 +27,7 @@ public class OrderService {
     private final WebClient.Builder webClientBuilder;
 
     @Transactional
-    public void placeOrder(OrderRequestDto orderRequestDto) {
+    public String placeOrder(OrderRequestDto orderRequestDto) {
         List<OrderLineItems> orderLineItems = orderRequestDto.getOrderLineItemsDtoList()
                 .stream()
                 .map(orderLineItemsMapper::convertDtoToOrderLineItems)
@@ -47,6 +47,7 @@ public class OrderService {
 
         if (allProductsInStock) {
             orderRepository.save(order);
+            return "Order placed successfully";
         } else {
             throw new InventoryNotFoundException("Product run out.");
         }
