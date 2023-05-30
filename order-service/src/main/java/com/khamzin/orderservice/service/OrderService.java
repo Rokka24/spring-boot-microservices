@@ -2,6 +2,7 @@ package com.khamzin.orderservice.service;
 
 import com.khamzin.orderservice.dto.inventory.InventoryResponseDto;
 import com.khamzin.orderservice.dto.order.OrderRequestDto;
+import com.khamzin.orderservice.event.OrderPlacedEvent;
 import com.khamzin.orderservice.model.Order;
 import com.khamzin.orderservice.model.OrderLineItems;
 import com.khamzin.orderservice.repository.OrderRepository;
@@ -9,6 +10,7 @@ import com.khamzin.orderservice.util.exception.InventoryNotFoundException;
 import com.khamzin.orderservice.util.mapper.OrderLineItemsMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -25,9 +27,10 @@ public class OrderService {
     private final OrderLineItemsMapper orderLineItemsMapper;
     private final OrderRepository orderRepository;
     private final WebClient.Builder webClientBuilder;
+    private final KafkaTemplate<String, OrderPlacedEvent> kafkaTemplate;
 
     @Transactional
-    public void placeOrder(OrderRequestDto orderRequestDto) {
+    public String placeOrder(OrderRequestDto orderRequestDto) {
         List<OrderLineItems> orderLineItems = orderRequestDto.getOrderLineItemsDtoList()
                 .stream()
                 .map(orderLineItemsMapper::convertDtoToOrderLineItems)
@@ -47,6 +50,8 @@ public class OrderService {
 
         if (allProductsInStock) {
             orderRepository.save(order);
+            kafkaTemplate.send("notificationTopic",new OrderPlacedEvent(order.getOrderNumber()));
+            return "Order placed successfully";
         } else {
             throw new InventoryNotFoundException("Product run out.");
         }
